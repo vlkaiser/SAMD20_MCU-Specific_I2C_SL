@@ -9,4 +9,6 @@ Added test code: SW0 = LED0 state
 Validated.  Base SAMD20J18 MCU code with GPIO initialized.
 
 ## Branch - feature i2c slave
-Added i2c_clock_init function.  Compiles and working.
+1. Added i2c_clock_init function.  Compiles and working.
+2. Added pin set peripheral function, and i2c_pin_init (using pin set peripheral) to init PA08 and PA09 as i2c SDA/SCL (respectively)
+
