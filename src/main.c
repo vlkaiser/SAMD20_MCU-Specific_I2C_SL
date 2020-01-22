@@ -7,6 +7,9 @@
 /* Prototypes */
 void i2c_clock_init(void);
 
+static void pin_set_peripheral_function(uint32_t pinmux);
+void i2c_pin_init(void);
+
 
 /******************************************************************************************************
  * @fn					- i2c_clock_init
@@ -27,12 +30,44 @@ void i2c_clock_init()
 	system_gclk_chan_enable(gclk_index);									//Enable
 }
 
+/******************************************************************************************************
+ * @fn					- pin_set_peripheral_function
+ * @brief				- Initialize i2c pins to SERCOM-Alternate peripheral function (D)
+ * @param[in]			- pinmux (MCU driver files for pin definitions)
+ * @return				- void
+ *
+ * @note				- Assign I/O lines PA08 and PA09 to the SERCOM peripheral function.
+ *						- Will switch the GPIO functionality of an I/O pin to peripheral
+ *							 functionality and assigns the given peripheral function to the pin.
+ ******************************************************************************************************/
+static void pin_set_peripheral_function(uint32_t pinmux)
+{
+	uint8_t port = (uint8_t)((pinmux >> 16)/32);
+	PORT->Group[port].PINCFG[((pinmux >> 16) - (port*32))].bit.PMUXEN = 1;
+	PORT->Group[port].PMUX[((pinmux >> 16) - (port*32))/2].reg &= ~(0xF << (4 * ((pinmux >> 16) & 0x01u)));
+	PORT->Group[port].PMUX[((pinmux >> 16) - (port*32))/2].reg |= (uint8_t)((pinmux &0x0000FFFF) << (4 * ((pinmux >> 16) & 0x01u)));
+
+}
+
+/******************************************************************************************************
+ * @fn					- i2c_pin_init
+ * @brief				- Initialize i2c pins to SERCOM-Alternate peripheral function (D)
+ * @param[in]			- void
+ * @return				- void
+ *
+ * @note				- PA08 = SDA, PA09 = SCL
+ ******************************************************************************************************/
+void i2c_pin_init()
+{
+	pin_set_peripheral_function(PINMUX_PA08D_SERCOM2_PAD0);	
+	pin_set_peripheral_function(PINMUX_PA09D_SERCOM2_PAD1);
+}
 
 int main (void)
 {
 	system_init();
 	i2c_clock_init();
-
+	i2c_pin_init();
 
 
 	while (1) {
